@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}Bill {{ bill.bill_number }}{% endblock %}
+{% block page_title %}Bill — {{ bill.bill_number }}{% endblock %}
+{% block content %}
+<div style="display:flex;gap:10px;margin-bottom:20px;">
+    <a href="/orders" class="btn btn-ghost"><i class="fas fa-arrow-left"></i> Back</a>
+    <a href="/billing/print/{{ bill.bill_number }}" class="btn btn-primary"><i class="fas fa-download"></i> Download PDF</a>
+</div>
+<div style="display:grid;grid-template-columns:1fr 320px;gap:20px;">
+    <div style="display:flex;flex-direction:column;gap:20px;">
+        <div class="card">
+            <h2 class="card-title">Buyer Information</h2>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:14px;">
+                <div><span style="color:var(--muted);display:block;font-size:11px;margin-bottom:2px;">NAME</span><strong>{{ bill.buyer_name }}</strong></div>
+                <div><span style="color:var(--muted);display:block;font-size:11px;margin-bottom:2px;">PHONE</span>{{ bill.buyer_phone or '—' }}</div>
+                <div><span style="color:var(--muted);display:block;font-size:11px;margin-bottom:2px;">PAYMENT</span><span class="badge badge-success">{{ bill.payment_method }}</span></div>
+                <div style="grid-column:1/-1;"><span style="color:var(--muted);display:block;font-size:11px;margin-bottom:2px;">ADDRESS</span>{{ bill.buyer_address or '—' }}</div>
+            </div>
+        </div>
+        <div class="card">
+            <h2 class="card-title">Items</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>#</th><th>Model No</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td class="mono">{{ loop.index }}</td>
+                        <td><strong>{{ item.product_name }}</strong></td>
+                        <td class="mono">{{ item.quantity }}</td>
+                        <td>{{ settings.get('currency_symbol','₹') }}{{ "{:,.2f}".format(item.unit_price) }}</td>
+                        <td><strong>{{ settings.get('currency_symbol','₹') }}{{ "{:,.2f}".format(item.total_price) }}</strong></td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div>
+        <div class="card" style="position:sticky;top:80px;">
+            <h2 class="card-title">Summary</h2>
+            <div style="display:flex;flex-direction:column;gap:10px;font-size:14px;">
+                <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Bill No</span><span class="mono">{{ bill.bill_number }}</span></div>
+                <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Date</span><span class="mono">{{ bill.created_at[:10] }}</span></div>
+                <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Status</span><span class="badge badge-success">{{ bill.status }}</span></div>
+                <div style="border-top:1px solid var(--border);padding-top:10px;display:flex;justify-content:space-between;"><span style="color:var(--muted);">Subtotal</span><span class="mono">{{ settings.get('currency_symbol','₹') }}{{ "{:,.2f}".format(bill.subtotal) }}</span></div>
+                {% if bill.discount > 0 %}
+                <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Discount</span><span class="mono" style="color:var(--success);">-{{ settings.get('currency_symbol','₹') }}{{ "{:,.2f}".format(bill.discount) }}</span></div>
+                {% endif %}
+                <div style="border-top:1px solid var(--border);padding-top:10px;display:flex;justify-content:space-between;font-size:18px;font-weight:700;">
+                    <span>Total</span><span class="mono" style="color:var(--accent);">{{ settings.get('currency_symbol','₹') }}{{ "{:,.2f}".format(bill.final_amount) }}</span>
+                </div>
+            </div>
+            {% if bill.notes %}
+            <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+                <span style="color:var(--muted);font-size:11px;">NOTES</span>
+                <p style="font-size:13px;margin-top:4px;">{{ bill.notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

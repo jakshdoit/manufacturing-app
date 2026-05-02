@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Order History{% endblock %}
+{% block page_title %}Order History{% endblock %}
+{% block content %}
+<div style="margin-bottom:20px;">
+    <form method="GET">
+        <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input name="search" value="{{ search }}" placeholder="Search by buyer name..." style="width:280px;"/>
+        </div>
+    </form>
+</div>
+<div class="card">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Bill No</th><th>Buyer</th><th>Phone</th><th>Subtotal</th><th>Tax</th><th>Discount</th><th>Total</th><th>Payment</th><th>Date</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+            {% for bill in bills %}
+            <tr>
+                <td><span class="mono">{{ bill.bill_number }}</span></td>
+                <td><strong>{{ bill.buyer_name }}</strong></td>
+                <td>{{ bill.buyer_phone or '—' }}</td>
+                <td>{{ settings.get('currency_symbol','₹') }}{{ "{:,.2f}".format(bill.subtotal) }}</td>
+                <td>{{ settings.get('currency_symbol','₹') }}{{ "{:,.2f}".format(bill.tax_amount) }}</td>
+                <td>{{ settings.get('currency_symbol','₹') }}{{ "{:,.2f}".format(bill.discount) }}</td>
+                <td><strong>{{ settings.get('currency_symbol','₹') }}{{ "{:,.2f}".format(bill.final_amount) }}</strong></td>
+                <td><span class="badge badge-info">{{ bill.payment_method }}</span></td>
+                <td><span class="mono">{{ bill.created_at[:10] }}</span></td>
+                <td>
+                    <div style="display:flex;gap:6px;">
+                        <a href="/orders/{{ bill.bill_number }}" class="btn btn-ghost btn-sm"><i class="fas fa-eye"></i></a>
+                        <a href="/billing/print/{{ bill.bill_number }}" class="btn btn-primary btn-sm"><i class="fas fa-download"></i></a>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="10" style="text-align:center;color:var(--muted);padding:32px;">No orders yet.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

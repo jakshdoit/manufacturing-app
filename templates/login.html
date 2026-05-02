@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Login — Manufacturing App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'DM Sans',sans-serif;background:linear-gradient(135deg,#fff0f5 0%,#fce4ec 50%,#fff8fa 100%);color:#2d1b2e;min-height:100vh;display:flex;align-items:center;justify-content:center;}
+        .login-wrap{width:100%;max-width:400px;padding:20px;}
+        .login-card{background:#ffffff;border:2px solid #fce4ec;border-radius:24px;padding:40px 36px;box-shadow:0 20px 60px rgba(233,30,140,.12);}
+        .login-logo{text-align:center;margin-bottom:32px;}
+        .login-logo .icon{width:64px;height:64px;background:linear-gradient(135deg,#e91e8c,#ff4db8);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;color:#fff;box-shadow:0 8px 24px rgba(233,30,140,.3);}
+        .login-logo h1{font-family:'Bebas Neue',sans-serif;font-size:32px;color:#e91e8c;letter-spacing:3px;}
+        .login-logo p{font-size:13px;color:#b07090;margin-top:4px;}
+        .form-group{margin-bottom:20px;}
+        label{display:block;font-size:12px;color:#b07090;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;font-weight:600;}
+        .input-wrap{position:relative;}
+        .input-wrap i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#f48fb1;font-size:14px;}
+        input{width:100%;background:#fff8fa;border:1.5px solid #fce4ec;color:#2d1b2e;padding:12px 14px 12px 40px;border-radius:10px;font-size:15px;font-family:'DM Sans',sans-serif;outline:none;transition:all .2s;}
+        input:focus{border-color:#e91e8c;box-shadow:0 0 0 3px rgba(233,30,140,.1);}
+        .btn{width:100%;padding:13px;background:linear-gradient(135deg,#e91e8c,#ff4db8);color:#ffffff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;margin-top:8px;box-shadow:0 4px 16px rgba(233,30,140,.3);}
+        .btn:hover{background:linear-gradient(135deg,#c2185b,#e91e8c);box-shadow:0 6px 20px rgba(233,30,140,.4);}
+        .flash{padding:12px 16px;border-radius:10px;font-size:13px;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+        .flash-error{background:rgba(244,67,54,.1);border:1px solid rgba(244,67,54,.3);color:#f44336;}
+    </style>
+</head>
+<body>
+<div class="login-wrap">
+    <div class="login-card">
+        <div class="login-logo">
+            <div class="icon"><i class="fas fa-industry"></i></div>
+            <h1>MFG APP</h1>
+            <p>Manufacturing Management System</p>
+        </div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="flash flash-{{ category }}"><i class="fas fa-exclamation-circle"></i>{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+        <form method="POST" action="/login">
+            <div class="form-group">
+                <label>Password</label>
+                <div class="input-wrap">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" name="password" placeholder="Enter company password" autofocus required/>
+                </div>
+            </div>
+            <button type="submit" class="btn"><i class="fas fa-sign-in-alt"></i> &nbsp;Login</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

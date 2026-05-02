@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}Outstanding Payments{% endblock %}
+{% block page_title %}Outstanding Payments{% endblock %}
+{% block content %}
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Search by buyer name or bill no..." style="width:300px;" oninput="searchTable()"/>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Sr. No</th>
+                    <th>Bill No</th>
+                    <th>Buyer</th>
+                    <th>Phone</th>
+                    <th>Total Amount</th>
+                    <th>Advance Paid</th>
+                    <th>Balance Due</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for o in outstanding %}
+            <tr>
+                <td><span class="mono">{{ loop.index }}</span></td>
+                <td><span class="mono">#{{ o.bill_number }}</span></td>
+                <td><strong>{{ o.buyer_name }}</strong></td>
+                <td>{{ o.buyer_phone or '—' }}</td>
+                <td>Rs.{{ "{:,.2f}".format(o.total_amount) }}</td>
+                <td style="color:#e91e8c;">Rs.{{ "{:,.2f}".format(o.advance_paid) }}</td>
+                <td><strong style="color:#f44336;">Rs.{{ "{:,.2f}".format(o.balance_due) }}</strong></td>
+                <td><span class="mono">{{ o.date }}</span></td>
+                <td>
+                    <div style="display:flex;gap:6px;">
+                        <button class="btn btn-primary btn-sm" onclick="openSettle('{{ o.bill_number }}','{{ o.buyer_name }}','{{ o.balance_due }}')">
+                            <i class="fas fa-rupee-sign"></i> Settle
+                        </button>
+                        <a href="/outstanding/receipt/{{ o.bill_number }}" class="btn btn-ghost btn-sm">
+                            <i class="fas fa-download"></i> PDF
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="9" style="text-align:center;color:#e91e8c;padding:32px;">
+                    <i class="fas fa-check-circle"></i> No outstanding payments! All bills are cleared.
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Settle Modal -->
+<div class="modal-overlay" id="settleModal">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">Record Payment</span>
+            <button class="modal-close" onclick="document.getElementById('settleModal').classList.remove('open')">&times;</button>
+        </div>
+        <form method="POST" id="settleForm" action="">
+            <div style="margin-bottom:16px;padding:12px;background:#fff5f7;border-radius:10px;font-size:14px;">
+                <strong id="settle_buyer"></strong><br/>
+                <span style="color:var(--muted);">Balance Due: </span>
+                <strong style="color:#f44336;" id="settle_balance"></strong>
+            </div>
+            <div class="form-group">
+                <label>Amount Received (Rs.)</label>
+                <input name="amount" id="settle_amount" type="number" step="0.01" placeholder="Enter amount received" required/>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;">
+                <button type="button" class="btn btn-ghost" onclick="document.getElementById('settleModal').classList.remove('open')">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Record Payment</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function searchTable() {
+    var input = document.getElementById('searchInput').value.toLowerCase();
+    var rows  = document.querySelectorAll('tbody tr');
+    rows.forEach(function(row) {
+        row.style.display = row.textContent.toLowerCase().includes(input) ? '' : 'none';
+    });
+}
+
+function openSettle(billNumber, buyerName, balanceDue) {
+    document.getElementById('settleForm').action     = '/outstanding/settle/' + billNumber;
+    document.getElementById('settle_buyer').textContent  = buyerName;
+    document.getElementById('settle_balance').textContent = 'Rs.' + parseFloat(balanceDue).toFixed(2);
+    document.getElementById('settle_amount').value       = balanceDue;
+    document.getElementById('settleModal').classList.add('open');
+}
+</script>
+{% endblock %}

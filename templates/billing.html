@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+{% block title %}New Bill{% endblock %}
+{% block page_title %}Create New Bill{% endblock %}
+{% block content %}
+<form method="POST" action="/billing/create" onsubmit="return validateForm()">
+<div style="display:grid;grid-template-columns:1fr 380px;gap:20px;">
+    <div style="display:flex;flex-direction:column;gap:20px;">
+        <div class="card">
+            <h2 class="card-title">Buyer Details</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Select Existing Buyer</label>
+                    <select id="buyer_select" onchange="fillBuyer(this.value)">
+                        <option value="">-- New Buyer --</option>
+                        {% for b in buyers %}
+                        <option value="{{ b.buyer_id }}" data-name="{{ b.name }}" data-phone="{{ b.phone }}" data-address="{{ b.address }}">{{ b.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <input type="hidden" name="buyer_id" id="buyer_id_field"/>
+                <div class="form-group">
+                    <label>Buyer Name *</label>
+                    <input name="buyer_name" id="buyer_name" placeholder="Full name" required/>
+                </div>
+                <div class="form-group">
+                    <label>Phone *</label>
+                    <input name="buyer_phone" id="buyer_phone" placeholder="10 digit phone number" maxlength="10"/>
+                </div>
+                <div class="form-group full">
+                    <label>Address *</label>
+                    <textarea name="buyer_address" id="buyer_address" placeholder="Billing address (required)" style="min-height:60px;"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                <h2 class="card-title" style="margin:0;">Products</h2>
+                <button type="button" class="btn btn-primary btn-sm" onclick="addProductRow()">
+                    <i class="fas fa-plus"></i> Add Product
+                </button>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th style="width:35%;">Model No</th><th>Qty</th><th>Unit Price</th><th>Total</th><th></th></tr>
+                    </thead>
+                    <tbody id="product_rows">
+                        <tr id="row_0">
+                            <td>
+                                <select name="product_id[]" onchange="fillPrice(this,0)" style="width:100%;">
+                                    <option value="">-- Select --</option>
+                                    {% for p in products %}
+                                    <option value="{{ p.product_id }}" data-price="{{ p.price }}" data-stock="{{ p.stock_quantity }}">{{ p.product_id }} (Stock: {{ p.stock_quantity }})</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td><input name="quantity[]" type="number" value="1" min="1" style="width:70px;" oninput="calcRow(0)"/></td>
+                            <td><input name="unit_price[]" type="number" step="0.01" value="0" style="width:100px;" oninput="calcRow(0)"/></td>
+                            <td><span id="total_0" class="mono">Rs.0.00</span></td>
+                            <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(0)"><i class="fas fa-times"></i></button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card">
+            <h2 class="card-title">Payment Details</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Payment Method</label>
+                    <select name="payment_method">
+                        <option>Cash</option><option>UPI</option><option>Bank Transfer</option><option>Cheque</option><option>Credit</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Advance Payment (Rs.)</label>
+                    <input name="advance_payment" id="advance_payment" type="number" step="0.01" value="0" oninput="calcTotals()"/>
+                </div>
+                <div class="form-group full">
+                    <label>Notes</label>
+                    <textarea name="notes" placeholder="Any additional notes..."></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <div class="card" style="position:sticky;top:80px;">
+            <h2 class="card-title">Bill Summary</h2>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+                <div style="display:flex;justify-content:space-between;font-size:14px;">
+                    <span style="color:var(--muted);">Total Amount</span>
+                    <span class="mono" id="summary_total">Rs.0.00</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:14px;">
+                    <span style="color:var(--muted);">Advance Payment</span>
+                    <span class="mono" id="summary_advance">Rs.0.00</span>
+                </div>
+                <div style="border-top:1px solid var(--border);padding-top:12px;display:flex;justify-content:space-between;font-size:18px;font-weight:700;">
+                    <span>Balance Due</span>
+                    <span class="mono" style="color:var(--accent);" id="summary_balance">Rs.0.00</span>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;margin-top:20px;padding:14px;font-size:15px;">
+                <i class="fas fa-file-invoice"></i> Create Bill
+            </button>
+            <a href="/billing" class="btn btn-ghost" style="width:100%;margin-top:8px;justify-content:center;">Cancel</a>
+        </div>
+    </div>
+</div>
+</form>
+{% endblock %}
+{% block extra_js %}
+<script>
+let rowCount = 1;
+
+function validateForm() {
+    var phone   = document.getElementById('buyer_phone').value.trim();
+    var address = document.getElementById('buyer_address').value.trim();
+    if (address === '') {
+        alert('Address cannot be left blank!');
+        document.getElementById('buyer_address').focus();
+        return false;
+    }
+    if (!/^\d{10}$/.test(phone)) {
+        alert('Phone number must be exactly 10 digits!');
+        document.getElementById('buyer_phone').focus();
+        return false;
+    }
+    return true;
+}
+
+function fillBuyer(buyerId) {
+    var sel     = document.getElementById('buyer_select');
+    var opt     = sel.options[sel.selectedIndex];
+    document.getElementById('buyer_id_field').value = buyerId;
+    document.getElementById('buyer_name').value     = opt.getAttribute('data-name')    || '';
+    document.getElementById('buyer_phone').value    = opt.getAttribute('data-phone')   || '';
+    document.getElementById('buyer_address').value  = opt.getAttribute('data-address') || '';
+}
+
+function fillPrice(sel, idx) {
+    var opt   = sel.options[sel.selectedIndex];
+    var stock = parseInt(opt.getAttribute('data-stock') || 0);
+    var row   = document.getElementById('row_' + idx);
+    var qtyInput = row.querySelectorAll('[name="quantity[]"]')[0];
+    qtyInput.setAttribute('max', stock);
+    qtyInput.setAttribute('data-stock', stock);
+    row.querySelectorAll('[name="unit_price[]"]')[0].value = opt.getAttribute('data-price') || 0;
+    calcRow(idx);
+}
+
+function calcRow(idx) {
+    var row      = document.getElementById('row_' + idx);
+    var qtyInput = row.querySelectorAll('[name="quantity[]"]')[0];
+    var qty      = parseFloat(qtyInput.value) || 0;
+    var price    = parseFloat(row.querySelectorAll('[name="unit_price[]"]')[0].value) || 0;
+    var stock    = parseInt(qtyInput.getAttribute('data-stock') || 999999);
+    // Remove old warning if exists
+    var oldWarn = row.querySelector('.stock-warn');
+    if (oldWarn) oldWarn.remove();
+    if (qty > stock) {
+        qtyInput.value = stock;
+        qty = stock;
+        var warn = document.createElement('div');
+        warn.className = 'stock-warn';
+        warn.style = 'color:#f44336;font-size:11px;margin-top:3px;';
+        warn.textContent = 'Max stock: ' + stock;
+        qtyInput.parentNode.appendChild(warn);
+    }
+    document.getElementById('total_' + idx).textContent = 'Rs.' + (qty * price).toFixed(2);
+    calcTotals();
+}
+
+function calcTotals() {
+    var total = 0;
+    var qEls  = document.querySelectorAll('[name="quantity[]"]');
+    var pEls  = document.querySelectorAll('[name="unit_price[]"]');
+    for (var i = 0; i < qEls.length; i++) {
+        total += (parseFloat(qEls[i].value) || 0) * (parseFloat(pEls[i].value) || 0);
+    }
+    var advance = parseFloat(document.getElementById('advance_payment').value) || 0;
+    var balance = total - advance;
+    document.getElementById('summary_total').textContent   = 'Rs.' + total.toFixed(2);
+    document.getElementById('summary_advance').textContent = 'Rs.' + advance.toFixed(2);
+    document.getElementById('summary_balance').textContent = 'Rs.' + balance.toFixed(2);
+}
+
+function addProductRow() {
+    var idx      = rowCount++;
+    var products = `{% for p in products %}<option value="{{ p.product_id }}" data-price="{{ p.price }}" data-stock="{{ p.stock_quantity }}">{{ p.product_id }} (Stock: {{ p.stock_quantity }})</option>{% endfor %}`;
+    var row      = document.createElement('tr');
+    row.id       = 'row_' + idx;
+    row.innerHTML = '<td><select name="product_id[]" onchange="fillPrice(this,' + idx + ')" style="width:100%;"><option value="">-- Select --</option>' + products + '</select></td>'
+        + '<td><input name="quantity[]" type="number" value="1" min="1" style="width:70px;" oninput="calcRow(' + idx + ')"/></td>'
+        + '<td><input name="unit_price[]" type="number" step="0.01" value="0" style="width:100px;" oninput="calcRow(' + idx + ')"/></td>'
+        + '<td><span id="total_' + idx + '" class="mono">Rs.0.00</span></td>'
+        + '<td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(' + idx + ')"><i class="fas fa-times"></i></button></td>';
+    document.getElementById('product_rows').appendChild(row);
+}
+
+function removeRow(idx) {
+    if (document.getElementById('product_rows').children.length > 1) {
+        document.getElementById('row_' + idx).remove();
+        calcTotals();
+    }
+}
+</script>
+{% endblock %}

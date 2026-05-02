@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block content %}
+<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
+    <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(233,30,140,.12);color:#e91e8c;">
+            <i class="fas fa-boxes"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ total_products }}</h3>
+            <p>Total Products</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(233,30,140,.12);color:#e91e8c;">
+            <i class="fas fa-receipt"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ total_bills }}</h3>
+            <p>Total Bills</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(244,67,54,.12);color:#f44336;">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ low_stock|length }}</h3>
+            <p>Low Stock Alerts</p>
+        </div>
+    </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+    <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <h2 class="card-title" style="margin:0;">Recent Bills</h2>
+            <a href="/orders" class="btn btn-ghost btn-sm">View All</a>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Bill No</th><th>Buyer</th><th>Amount</th><th>Date</th></tr></thead>
+                <tbody>
+                {% for bill in recent_bills %}
+                <tr>
+                    <td><span class="mono">#{{ bill.bill_number }}</span></td>
+                    <td>{{ bill.buyer_name }}</td>
+                    <td>₹{{ "{:,.2f}".format(bill.final_amount | float) }}</td>
+                    <td><span class="mono">{{ bill.created_at[:10] }}</span></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px;">No bills yet</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <h2 class="card-title" style="margin:0;">🔔 Low Stock Alerts</h2>
+            <a href="/inventory" class="btn btn-ghost btn-sm">View All</a>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Model No</th><th>Stock</th><th>Status</th></tr></thead>
+                <tbody>
+                {% for p in low_stock %}
+                <tr>
+                    <td><span class="mono">{{ p.product_id }}</span></td>
+                    <td><span class="mono">{{ p.stock_quantity }}</span></td>
+                    <td>
+                        {% if p.stock_quantity == 0 %}
+                        <span class="badge badge-danger">Out of Stock</span>
+                        {% else %}
+                        <span class="badge badge-warning">Low Stock</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3" style="text-align:center;color:#e91e8c;padding:24px;"><i class="fas fa-check-circle"></i> All stock levels healthy!</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

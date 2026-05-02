@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Settlement Receipt — Bill #{{ bill_number }}{% endblock %}
+{% block page_title %}Settlement Receipt{% endblock %}
+{% block content %}
+<div style="max-width:600px;margin:0 auto;text-align:center;padding:40px 20px;">
+    <div style="background:#fff5f7;border:2px solid #e91e8c;border-radius:16px;padding:32px;margin-bottom:24px;">
+        <div style="font-size:48px;margin-bottom:12px;">&#10003;</div>
+        <h2 style="color:#e91e8c;margin:0 0 8px;">Payment Recorded!</h2>
+        <p style="color:#666;margin:0;font-size:15px;">
+            Rs.{{ "{:,.2f}".format(this_payment) }} received from <strong>{{ bill.buyer_name }}</strong><br/>
+            for Bill <strong>#{{ bill_number }}</strong>
+        </p>
+    </div>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <a href="/outstanding/settlement-receipt-pdf/{{ bill_number }}?this_payment={{ this_payment }}"
+           class="btn btn-primary" style="font-size:15px;padding:12px 28px;">
+            <i class="fas fa-download"></i> Download Receipt PDF
+        </a>
+        <a href="/outstanding" class="btn btn-ghost" style="font-size:15px;padding:12px 28px;">
+            <i class="fas fa-arrow-left"></i> Back to Outstanding
+        </a>
+    </div>
+    <div style="margin-top:32px;background:#fff;border:1px solid #eee;border-radius:12px;padding:24px;text-align:left;">
+        <h3 style="margin:0 0 16px;color:#333;font-size:14px;text-transform:uppercase;letter-spacing:1px;">Summary</h3>
+        <table style="width:100%;font-size:14px;border-collapse:collapse;">
+            <tr style="border-bottom:1px solid #f0f0f0;">
+                <td style="padding:8px 0;color:#666;">Bill Total</td>
+                <td style="padding:8px 0;text-align:right;font-weight:600;">Rs.{{ "{:,.2f}".format(bill.final_amount or 0) }}</td>
+            </tr>
+            <tr style="border-bottom:1px solid #f0f0f0;">
+                <td style="padding:8px 0;color:#666;">Total Paid</td>
+                <td style="padding:8px 0;text-align:right;font-weight:600;color:#e91e8c;">Rs.{{ "{:,.2f}".format(bill.advance_payment or 0) }}</td>
+            </tr>
+            <tr style="border-bottom:1px solid #f0f0f0;">
+                <td style="padding:8px 0;color:#e91e8c;font-weight:600;">This Payment</td>
+                <td style="padding:8px 0;text-align:right;font-weight:700;color:#e91e8c;">Rs.{{ "{:,.2f}".format(this_payment) }}</td>
+            </tr>
+            <tr>
+                <td style="padding:8px 0;font-weight:700;">Balance Due</td>
+                <td style="padding:8px 0;text-align:right;font-weight:700;
+                    color:{% if bill.balance_payment > 0 %}#f44336{% else %}#1a7a1a{% endif %};">
+                    Rs.{{ "{:,.2f}".format(bill.balance_payment or 0) }}
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+{% endblock %}

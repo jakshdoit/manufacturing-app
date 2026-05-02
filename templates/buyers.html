@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Buyers{% endblock %}
+{% block page_title %}Buyer Management{% endblock %}
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <form method="GET">
+        <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input name="search" value="{{ search }}" placeholder="Search buyers..." style="width:240px;"/>
+        </div>
+    </form>
+    <button class="btn btn-primary" onclick="document.getElementById('addBuyerModal').classList.add('open')">
+        <i class="fas fa-plus"></i> Add Buyer
+    </button>
+</div>
+<div class="card">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Sr. No</th><th>Buyer ID</th><th>Name</th><th>Phone</th><th>Email</th><th>Address</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+            {% for b in buyers %}
+            <tr>
+                <td><span class="mono">{{ loop.index }}</span></td>
+                <td><span class="mono">{{ b.buyer_id }}</span></td>
+                <td><strong>{{ b.name }}</strong></td>
+                <td>{{ b.phone or '—' }}</td>
+                <td>{{ b.email or '—' }}</td>
+                <td>{{ b.address or '—' }}</td>
+                <td>
+                    <form method="POST" action="/buyers/delete/{{ b.buyer_id }}" onsubmit="return confirm('Delete {{ b.name }}?')">
+                        <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px;">No buyers found.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="modal-overlay" id="addBuyerModal">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">Add New Buyer</span>
+            <button class="modal-close" onclick="document.getElementById('addBuyerModal').classList.remove('open')">&times;</button>
+        </div>
+        <form method="POST" action="/buyers/add">
+            <div class="form-grid">
+                <div class="form-group full"><label>Full Name *</label><input name="name" placeholder="Buyer full name" required/></div>
+                <div class="form-group"><label>Phone</label><input name="phone" placeholder="Phone number"/></div>
+                <div class="form-group"><label>Email</label><input name="email" type="email" placeholder="Email address"/></div>
+                <div class="form-group full"><label>Address</label><textarea name="address" placeholder="Full address"></textarea></div>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;">
+                <button type="button" class="btn btn-ghost" onclick="document.getElementById('addBuyerModal').classList.remove('open')">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Add Buyer</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
