@@ -2,11 +2,18 @@
 {% block title %}Order History{% endblock %}
 {% block page_title %}Order History{% endblock %}
 {% block content %}
-<div style="margin-bottom:20px;">
-    <form method="GET">
+<div style="margin-bottom:20px;display:flex;gap:10px;align-items:center;">
+    <form method="GET" style="display:flex;gap:10px;align-items:center;">
         <div class="search-bar">
             <i class="fas fa-search"></i>
-            <input name="search" value="{{ search }}" placeholder="Search by buyer name..." style="width:280px;"/>
+            <input name="search" value="{{ search }}" placeholder="Search by buyer name..." style="width:240px;"/>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+            <input type="date" name="date_from" value="{{ date_from }}" style="width:150px;" placeholder="From date"/>
+            <span style="color:var(--muted);">to</span>
+            <input type="date" name="date_to" value="{{ date_to }}" style="width:150px;" placeholder="To date"/>
+            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i> Filter</button>
+            <a href="/orders" class="btn btn-ghost btn-sm">Clear</a>
         </div>
     </form>
 </div>

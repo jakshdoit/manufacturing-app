@@ -9,14 +9,32 @@ def logged_in():
 @orders_bp.route('/orders')
 def index():
     if not logged_in(): return redirect(url_for('auth.login'))
-    sb       = get_supabase()
-    settings = get_settings()
-    search   = request.args.get('search', '')
-    query    = sb.table('bills').select('*').order('created_at', desc=True)
+    sb        = get_supabase()
+    settings  = get_settings()
+    search    = request.args.get('search', '')
+    date_from = request.args.get('date_from', '')
+    date_to   = request.args.get('date_to', '')
+
+    query = sb.table('bills').select('*').order('created_at', desc=True)
+
     if search:
         query = query.ilike('buyer_name', f'%{search}%')
+    if date_from:
+        query = query.gte('created_at', f'{date_from}T00:00:00')
+    if date_to:
+        query = query.lte('created_at', f'{date_to}T23:59:59')
+
     bills = query.execute().data
-    return render_template('orders.html', bills=bills, settings=settings, search=search)
+
+    for b in bills:
+        b['final_amount']    = float(b.get('final_amount') or 0)
+        b['subtotal']        = float(b.get('subtotal') or 0)
+        b['tax_amount']      = float(b.get('tax_amount') or 0)
+        b['discount']        = float(b.get('discount') or 0)
+
+    return render_template('orders.html',
+        bills=bills, settings=settings,
+        search=search, date_from=date_from, date_to=date_to)
 
 @orders_bp.route('/orders/<bill_number>')
 def detail(bill_number):
