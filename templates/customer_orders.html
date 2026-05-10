@@ -96,7 +96,7 @@ function tick() {
 
 function fetchOrders() {
     var dot = document.getElementById('live-dot');
-    if (dot) dot.style.background = '#ff9800';
+    if (dot) dot.style.background = '#4a7fa0';
 
     fetch('/customer-orders/api/pending')
         .then(function(r){ return r.json(); })

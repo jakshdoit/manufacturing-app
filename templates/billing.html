@@ -3,6 +3,9 @@
 {% block page_title %}Create New Bill{% endblock %}
 {% block content %}
 <form method="POST" action="/billing/create" onsubmit="return validateForm()">
+{% if from_order %}
+<input type="hidden" name="from_order" value="{{ from_order }}"/>
+{% endif %}
 <div style="display:grid;grid-template-columns:1fr 380px;gap:20px;">
     <div style="display:flex;flex-direction:column;gap:20px;">
         <div class="card">
@@ -204,5 +207,45 @@ function removeRow(idx) {
         calcTotals();
     }
 }
+
+// Auto-fill from customer order
+{% if order_data %}
+window.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('buyer_name').value    = {{ order_data.customer_name | tojson }};
+    document.getElementById('buyer_phone').value   = {{ order_data.customer_phone | tojson }};
+    document.getElementById('buyer_address').value = {{ order_data.customer_address | default('') | tojson }};
+    document.querySelector('[name="notes"]').value  = {{ order_data.notes | default('') | tojson }};
+
+    // Check if buyer exists in dropdown
+    var sel = document.getElementById('buyer_select');
+    for (var i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].getAttribute('data-phone') === {{ order_data.customer_phone | tojson }}) {
+            sel.selectedIndex = i;
+            fillBuyer(sel.options[i].value);
+            break;
+        }
+    }
+
+    // Pre-fill products
+    var items = {{ order_items | tojson }};
+    var tbody = document.getElementById('product_rows');
+    tbody.innerHTML = '';
+    rowCount = 0;
+    items.forEach(function(item, idx) {
+        var products = `{% for p in products %}<option value="{{ p.product_id }}" data-price="{{ p.price }}" data-stock="{{ p.stock_quantity }}" ${item.product_id === "{{ p.product_id }}" ? "selected" : ""}>{{ p.product_id }} (Stock: {{ p.stock_quantity }})</option>{% endfor %}`;
+        var row = document.createElement('tr');
+        row.id  = 'row_' + idx;
+        row.innerHTML =
+            '<td><select name="product_id[]" onchange="fillPrice(this,' + idx + ')" style="width:100%;"><option value="">-- Select --</option>' + products + '</select></td>' +
+            '<td><input name="quantity[]" type="number" value="' + item.quantity + '" min="1" style="width:70px;" oninput="calcRow(' + idx + ')"/></td>' +
+            '<td><input name="unit_price[]" type="number" step="0.01" value="' + item.unit_price + '" style="width:100px;" oninput="calcRow(' + idx + ')"/></td>' +
+            '<td><span id="total_' + idx + '" class="mono">Rs.' + (item.quantity * item.unit_price).toFixed(2) + '</span></td>' +
+            '<td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(' + idx + ')"><i class="fas fa-times"></i></button></td>';
+        tbody.appendChild(row);
+        rowCount++;
+    });
+    calcTotals();
+});
+{% endif %}
 </script>
 {% endblock %}

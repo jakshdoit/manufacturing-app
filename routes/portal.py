@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from utils.supabase_client import get_supabase, get_settings
+from datetime import datetime, timedelta
 import uuid
 
 portal_bp = Blueprint('portal', __name__)
@@ -21,14 +22,14 @@ def index():
 
 @portal_bp.route('/portal/submit', methods=['POST'])
 def submit():
-    sb            = get_supabase()
-    customer_name  = request.form.get('customer_name', '').strip()
-    customer_phone = request.form.get('customer_phone', '').strip()
-    notes          = request.form.get('notes', '').strip()
+    sb               = get_supabase()
+    customer_name    = request.form.get('customer_name', '').strip()
+    customer_phone   = request.form.get('customer_phone', '').strip()
+    notes            = request.form.get('notes', '').strip()
     customer_address = request.form.get('customer_address', '').strip()
-    product_ids    = request.form.getlist('product_id[]')
-    quantities     = request.form.getlist('quantity[]')
-    prices         = request.form.getlist('unit_price[]')
+    product_ids      = request.form.getlist('product_id[]')
+    quantities       = request.form.getlist('quantity[]')
+    prices           = request.form.getlist('unit_price[]')
 
     if not customer_name or not customer_phone:
         flash('Please enter your name and phone number.', 'error')
@@ -42,22 +43,38 @@ def submit():
         flash('Please enter a valid 10-digit phone number.', 'error')
         return redirect(url_for('portal.index'))
 
+    # ── DUPLICATE GUARD ──
+    # Block if same phone has a pending order in last 2 minutes
+    try:
+        two_min_ago = (datetime.utcnow() - timedelta(minutes=2)).isoformat()
+        recent = sb.table('customer_orders') \
+            .select('order_number') \
+            .eq('customer_phone', customer_phone) \
+            .eq('status', 'pending') \
+            .gte('created_at', two_min_ago) \
+            .execute()
+        if recent.data:
+            existing_order = recent.data[0]['order_number']
+            flash(f'You already have a pending order #{existing_order}. Please go to the counter!', 'error')
+            return redirect(url_for('portal.success', order_number=existing_order))
+    except Exception:
+        pass
+
     order_number = str(next_order_number(sb))
 
     try:
         sb.table('customer_orders').insert({
-            'order_number':   order_number,
-            'customer_name':  customer_name,
-            'customer_phone': customer_phone,
-            'notes':          notes,
+            'order_number':     order_number,
+            'customer_name':    customer_name,
+            'customer_phone':   customer_phone,
+            'notes':            notes,
             'customer_address': customer_address,
-            'status':         'pending'
+            'status':           'pending'
         }).execute()
 
         for i, pid in enumerate(product_ids):
-            qty   = int(quantities[i])
-            price = float(prices[i])
-            product = sb.table('inventory').select('*').eq('product_id', pid).single().execute().data
+            qty     = int(quantities[i])
+            price   = float(prices[i])
             sb.table('customer_order_items').insert({
                 'order_number': order_number,
                 'product_id':   pid,

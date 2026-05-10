@@ -22,11 +22,20 @@ def next_buyer_number(sb):
 @billing_bp.route('/billing')
 def index():
     if not logged_in(): return redirect(url_for('auth.login'))
-    sb       = get_supabase()
-    settings = get_settings()
-    products = sb.table('inventory').select('*').order('product_id').execute().data
-    buyers   = sb.table('buyers').select('*').order('name').execute().data
-    return render_template('billing.html', products=products, buyers=buyers, settings=settings)
+    sb         = get_supabase()
+    settings   = get_settings()
+    products   = sb.table('inventory').select('*').order('product_id').execute().data
+    buyers     = sb.table('buyers').select('*').order('name').execute().data
+    from_order = request.args.get('from_order')
+    order_data = None
+    order_items = []
+    if from_order:
+        try:
+            order_data  = sb.table('customer_orders').select('*').eq('order_number', from_order).single().execute().data
+            order_items = sb.table('customer_order_items').select('*').eq('order_number', from_order).execute().data
+        except:
+            pass
+    return render_template('billing.html', products=products, buyers=buyers, settings=settings, order_data=order_data, order_items=order_items, from_order=from_order)
 
 @billing_bp.route('/billing/create', methods=['POST'])
 def create():
@@ -118,6 +127,14 @@ def create():
             }).execute()
             new_stock = max(0, product['stock_quantity'] - qty)
             sb.table('inventory').update({'stock_quantity': new_stock}).eq('product_id', pid).execute()
+        # If created from customer order, mark it as converted
+        from_order = request.form.get('from_order')
+        if from_order:
+            try:
+                sb.table('customer_orders').update({'status': 'converted'}).eq('order_number', from_order).execute()
+            except:
+                pass
+
         flash(f'Bill #{bill_number} created successfully!', 'success')
         return redirect(url_for('billing.view_bill', bill_number=bill_number))
     except Exception as e:
