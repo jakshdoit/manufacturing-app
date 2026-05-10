@@ -16,6 +16,8 @@ from routes.buyers    import buyers_bp
 from routes.orders    import orders_bp
 from routes.settings  import settings_bp
 from routes.outstanding import outstanding_bp
+from routes.portal import portal_bp
+from routes.customer_orders import customer_orders_bp
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(dashboard_bp)
@@ -25,6 +27,8 @@ app.register_blueprint(buyers_bp)
 app.register_blueprint(orders_bp)
 app.register_blueprint(settings_bp)
 app.register_blueprint(outstanding_bp)
+app.register_blueprint(portal_bp)
+app.register_blueprint(customer_orders_bp)
 
 @app.route('/')
 def index():

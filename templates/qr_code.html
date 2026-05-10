@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}QR Code{% endblock %}
+{% block page_title %}QR CODE{% endblock %}
+{% block content %}
+<div class="card" style="max-width:480px;margin:0 auto;text-align:center;">
+    <div class="card-title">Customer Portal QR Code</div>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:24px;">Scan to open the ordering portal</p>
+    <div id="qrcode" style="display:flex;justify-content:center;margin-bottom:24px;"></div>
+    <p style="font-size:12px;color:var(--muted);">Points to: <span id="portal-url" style="color:var(--accent);font-family:'DM Mono',monospace;"></span></p>
+    <a id="download-btn" class="btn btn-primary" style="margin-top:20px;display:inline-flex;" download="portal-qr.png">
+        <i class="fas fa-download"></i> Download QR Code
+    </a>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+    const url = window.location.origin + '/portal';
+    document.getElementById('portal-url').textContent = url;
+    const qr = new QRCode(document.getElementById('qrcode'), {
+        text: url,
+        width: 256,
+        height: 256,
+        colorDark: '#e91e8c',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+    });
+    setTimeout(() => {
+        const canvas = document.querySelector('#qrcode canvas');
+        if (canvas) {
+            document.getElementById('download-btn').href = canvas.toDataURL('image/png');
+        }
+    }, 500);
+</script>
+{% endblock %}

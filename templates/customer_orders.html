@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% block title %}Customer Orders{% endblock %}
+{% block page_title %}Customer Orders{% endblock %}
+{% block content %}
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <div style="display:flex;gap:10px;">
+        <a href="/customer-orders?status=pending" class="btn {% if status == 'pending' %}btn-primary{% else %}btn-ghost{% endif %}">
+            <i class="fas fa-clock"></i> Pending
+        </a>
+        <a href="/customer-orders?status=converted" class="btn {% if status == 'converted' %}btn-primary{% else %}btn-ghost{% endif %}">
+            <i class="fas fa-check"></i> Converted
+        </a>
+        <a href="/customer-orders?status=cancelled" class="btn {% if status == 'cancelled' %}btn-primary{% else %}btn-ghost{% endif %}">
+            <i class="fas fa-times"></i> Cancelled
+        </a>
+    </div>
+    {% if status == 'pending' %}
+    <div id="live-indicator" style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);">
+        <span id="live-dot" style="width:8px;height:8px;border-radius:50%;background:#4caf50;display:inline-block;"></span>
+        <span id="live-text">Live — refreshing in <strong id="countdown">10</strong>s</span>
+    </div>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Sr. No</th>
+                    <th>Order No</th>
+                    <th>Customer</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Time</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="orders-tbody">
+            {% for order in orders %}
+            <tr>
+                <td><span class="mono">{{ loop.index }}</span></td>
+                <td><span class="mono">#{{ order.order_number }}</span></td>
+                <td><strong>{{ order.customer_name }}</strong></td>
+                <td>{{ order.customer_phone }}</td>
+                <td>
+                    {% if order.status == 'pending' %}
+                    <span class="badge badge-warning">Pending</span>
+                    {% elif order.status == 'converted' %}
+                    <span class="badge badge-success">Converted</span>
+                    {% else %}
+                    <span class="badge badge-danger">Cancelled</span>
+                    {% endif %}
+                </td>
+                <td><span class="mono">{{ order.created_at[11:16] }}</span></td>
+                <td>
+                    <div style="display:flex;gap:6px;">
+                        <a href="/customer-orders/{{ order.order_number }}" class="btn btn-ghost btn-sm">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                        {% if order.status == 'pending' %}
+                        <form method="POST" action="/customer-orders/cancel/{{ order.order_number }}" onsubmit="return confirm('Cancel this order?')">
+                            <button class="btn btn-danger btn-sm"><i class="fas fa-times"></i></button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" style="text-align:center;color:var(--muted);padding:32px;">
+                    No {{ status }} orders found.
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if status == 'pending' %}
+<script>
+var countdown = 10;
+var prevCount = {{ orders | length }};
+
+function tick() {
+    countdown--;
+    var el = document.getElementById('countdown');
+    if (el) el.textContent = countdown;
+    if (countdown <= 0) {
+        countdown = 10;
+        fetchOrders();
+    }
+}
+
+function fetchOrders() {
+    var dot = document.getElementById('live-dot');
+    if (dot) dot.style.background = '#ff9800';
+
+    fetch('/customer-orders/api/pending')
+        .then(function(r){ return r.json(); })
+        .then(function(data) {
+            if (dot) dot.style.background = '#4caf50';
+            if (data.count !== prevCount) {
+                if (data.count > prevCount) {
+                    playAlert();
+                }
+                prevCount = data.count;
+                renderRows(data.orders);
+            }
+        })
+        .catch(function(){ if (dot) dot.style.background = '#f44336'; });
+}
+
+function renderRows(orders) {
+    var tbody = document.getElementById('orders-tbody');
+    if (!orders.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px;">No pending orders found.</td></tr>';
+        return;
+    }
+    var html = '';
+    orders.forEach(function(o, i) {
+        var time = o.created_at ? o.created_at.substring(11,16) : '';
+        html += '<tr>' +
+            '<td><span class="mono">'+(i+1)+'</span></td>' +
+            '<td><span class="mono">#'+o.order_number+'</span></td>' +
+            '<td><strong>'+o.customer_name+'</strong></td>' +
+            '<td>'+o.customer_phone+'</td>' +
+            '<td><span class="badge badge-warning">Pending</span></td>' +
+            '<td><span class="mono">'+time+'</span></td>' +
+            '<td><div style="display:flex;gap:6px;">' +
+            '<a href="/customer-orders/'+o.order_number+'" class="btn btn-ghost btn-sm"><i class="fas fa-eye"></i> View</a>' +
+            '<form method="POST" action="/customer-orders/cancel/'+o.order_number+'" onsubmit="return confirm(\'Cancel this order?\')">' +
+            '<button class="btn btn-danger btn-sm"><i class="fas fa-times"></i></button></form>' +
+            '</div></td></tr>';
+    });
+    tbody.innerHTML = html;
+}
+
+function playAlert() {
+    try {
+        var ctx = new (window.AudioContext || window.webkitAudioContext)();
+        var o = ctx.createOscillator();
+        var g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.frequency.value = 880;
+        g.gain.setValueAtTime(0.3, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+        o.start(ctx.currentTime);
+        o.stop(ctx.currentTime + 0.4);
+    } catch(e){}
+}
+
+setInterval(tick, 1000);
+</script>
+{% endif %}
+
+{% endblock %}

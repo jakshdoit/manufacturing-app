@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}Order #{{ order.order_number }}{% endblock %}
+{% block page_title %}Order #{{ order.order_number }}{% endblock %}
+{% block content %}
+
+<div style="display:flex;gap:10px;margin-bottom:20px;">
+    <a href="/customer-orders" class="btn btn-ghost"><i class="fas fa-arrow-left"></i> Back</a>
+    {% if order.status == 'pending' %}
+    <form method="POST" action="/customer-orders/convert/{{ order.order_number }}">
+        <button type="submit" class="btn btn-primary" onclick="return confirm('Convert this order to a bill?')">
+            <i class="fas fa-file-invoice"></i> Convert to Bill
+        </button>
+    </form>
+    <form method="POST" action="/customer-orders/cancel/{{ order.order_number }}">
+        <button type="submit" class="btn btn-danger" onclick="return confirm('Cancel this order?')">
+            <i class="fas fa-times"></i> Cancel Order
+        </button>
+    </form>
+    {% endif %}
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 320px;gap:20px;">
+    <div style="display:flex;flex-direction:column;gap:20px;">
+        <div class="card">
+            <h2 class="card-title">Customer Information</h2>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:14px;">
+                <div><span style="color:var(--muted);display:block;font-size:11px;margin-bottom:2px;">NAME</span><strong>{{ order.customer_name }}</strong></div>
+                <div><span style="color:var(--muted);display:block;font-size:11px;margin-bottom:2px;">PHONE</span>{{ order.customer_phone }}</div>
+                {% if order.notes %}
+                <div style="grid-column:1/-1;"><span style="color:var(--muted);display:block;font-size:11px;margin-bottom:2px;">NOTES</span>{{ order.notes }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">Ordered Items</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>#</th><th>Model No</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td class="mono">{{ loop.index }}</td>
+                        <td><strong>{{ item.product_name }}</strong></td>
+                        <td class="mono">{{ item.quantity }}</td>
+                        <td>₹{{ "{:,.2f}".format(item.unit_price) }}</td>
+                        <td><strong>₹{{ "{:,.2f}".format(item.total_price) }}</strong></td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="card" style="position:sticky;top:80px;">
+            <h2 class="card-title">Order Summary</h2>
+            <div style="display:flex;flex-direction:column;gap:10px;font-size:14px;">
+                <div style="display:flex;justify-content:space-between;">
+                    <span style="color:var(--muted);">Order No</span>
+                    <span class="mono">#{{ order.order_number }}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;">
+                    <span style="color:var(--muted);">Time</span>
+                    <span class="mono">{{ order.created_at[11:16] }}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;">
+                    <span style="color:var(--muted);">Status</span>
+                    {% if order.status == 'pending' %}
+                    <span class="badge badge-warning">Pending</span>
+                    {% elif order.status == 'converted' %}
+                    <span class="badge badge-success">Converted</span>
+                    {% else %}
+                    <span class="badge badge-danger">Cancelled</span>
+                    {% endif %}
+                </div>
+                <div style="border-top:1px solid var(--border);padding-top:10px;display:flex;justify-content:space-between;font-size:18px;font-weight:700;">
+                    <span>Total</span>
+                    <span style="color:var(--accent);">₹{{ "{:,.2f}".format(items|sum(attribute='total_price')) }}</span>
+                </div>
+            </div>
+            {% if order.status == 'pending' %}
+            <form method="POST" action="/customer-orders/convert/{{ order.order_number }}" style="margin-top:16px;">
+                <button type="submit" class="btn btn-primary" style="width:100%;padding:14px;font-size:15px;" onclick="return confirm('Convert to bill?')">
+                    <i class="fas fa-file-invoice"></i> Convert to Bill
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

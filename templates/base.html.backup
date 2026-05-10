@@ -149,13 +149,6 @@
         <a href="/orders" class="nav-item {% if '/orders' in request.path %}active{% endif %}">
             <i class="fas fa-receipt"></i><span>Order History</span>
         </a>
-        <div class="nav-label">Portal</div>
-        <a href="/customer-orders" class="nav-item {% if '/customer-orders' in request.path %}active{% endif %}">
-            <i class="fas fa-shopping-cart"></i><span>Customer Orders</span>
-        </a>
-        <a href="/qr-code" class="nav-item {% if '/qr-code' in request.path %}active{% endif %}">
-            <i class="fas fa-qrcode"></i><span>QR Code</span>
-        </a>
         <div class="nav-label">System</div>
         <a href="/settings" class="nav-item {% if '/settings' in request.path %}active{% endif %}">
             <i class="fas fa-cog"></i><span>Settings</span>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Order Submitted!</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'DM Sans',sans-serif;background:#fff5f7;color:#2d1b2e;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+        .card{background:#fff;border:2px solid #fce4ec;border-radius:20px;padding:32px 24px;max-width:420px;width:100%;text-align:center;box-shadow:0 8px 32px rgba(233,30,140,.1);}
+        .icon{width:72px;height:72px;background:linear-gradient(135deg,#e91e8c,#ff4db8);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:32px;color:#fff;}
+        h1{font-size:22px;font-weight:700;color:#e91e8c;margin-bottom:8px;}
+        p{font-size:14px;color:#b07090;margin-bottom:20px;}
+        .order-num{background:#fff5f7;border:1.5px solid #fce4ec;border-radius:10px;padding:12px;margin-bottom:20px;}
+        .order-num span{font-size:24px;font-weight:700;color:#e91e8c;}
+        .items-list{text-align:left;margin-bottom:20px;}
+        .item-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #fce4ec;font-size:14px;}
+        .item-row:last-child{border-bottom:none;}
+        .total-row{display:flex;justify-content:space-between;font-weight:700;font-size:16px;padding-top:12px;border-top:2px solid #fce4ec;margin-top:4px;}
+        .info-box{background:#fff5f7;border-radius:10px;padding:14px;margin-bottom:20px;font-size:13px;color:#b07090;line-height:1.6;}
+        .btn{display:block;width:100%;padding:14px;background:linear-gradient(135deg,#e91e8c,#ff4db8);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;cursor:pointer;}
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="icon"><i class="fas fa-check"></i></div>
+    <h1>Order List Submitted!</h1>
+    <p>Hi <strong>{{ order.customer_name }}</strong>, your order list has been received.</p>
+
+    <div class="order-num">
+        <div style="font-size:12px;color:#b07090;margin-bottom:4px;">YOUR ORDER NUMBER</div>
+        <span>#{{ order.order_number }}</span>
+    </div>
+
+    <div class="items-list">
+        {% for item in items %}
+        <div class="item-row">
+            <span>{{ item.product_name }} × {{ item.quantity }}</span>
+            <span style="color:#e91e8c;font-weight:600;">₹{{ "{:,.2f}".format(item.total_price) }}</span>
+        </div>
+        {% endfor %}
+        <div class="total-row">
+            <span>Total</span>
+            <span style="color:#e91e8c;">₹{{ "{:,.2f}".format(items|sum(attribute='total_price')) }}</span>
+        </div>
+    </div>
+
+    <div class="info-box">
+        <i class="fas fa-info-circle" style="color:#e91e8c;"></i>
+        Please proceed to the <strong>counter</strong> with this order number to complete your purchase and payment.
+    </div>
+
+    <a href="/portal" class="btn"><i class="fas fa-arrow-left"></i> Back to Menu</a>
+</div>
+</body>
+</html>
