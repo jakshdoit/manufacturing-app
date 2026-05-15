@@ -2,57 +2,78 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
     <title>Order Submitted!</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=Bebas+Neue&display=swap" rel="stylesheet"/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;}
-        body{font-family:'DM Sans',sans-serif;background:#fff5f7;color:#2d1b2e;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
-        .card{background:#fff;border:2px solid #fce4ec;border-radius:20px;padding:32px 24px;max-width:420px;width:100%;text-align:center;box-shadow:0 8px 32px rgba(233,30,140,.1);}
-        .icon{width:72px;height:72px;background:linear-gradient(135deg,#e91e8c,#ff4db8);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:32px;color:#fff;}
-        h1{font-size:22px;font-weight:700;color:#e91e8c;margin-bottom:8px;}
-        p{font-size:14px;color:#b07090;margin-bottom:20px;}
-        .order-num{background:#fff5f7;border:1.5px solid #fce4ec;border-radius:10px;padding:12px;margin-bottom:20px;}
-        .order-num span{font-size:24px;font-weight:700;color:#e91e8c;}
-        .items-list{text-align:left;margin-bottom:20px;}
-        .item-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #fce4ec;font-size:14px;}
+        html,body{height:100%;font-family:'DM Sans',sans-serif;background:#faf8f4;color:#2d2416;}
+        .page{min-height:100vh;display:flex;flex-direction:column;background:#faf8f4;}
+        .top-bar{background:#f0ece3;padding:20px 16px 14px;border-bottom:1px solid #e2d9c8;}
+        .top-bar h2{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;color:#2d2416;}
+        .top-bar p{font-size:12px;color:#8a7a60;margin-top:2px;}
+        .content{flex:1;padding:20px 16px;display:flex;flex-direction:column;gap:14px;}
+        .success-icon{width:64px;height:64px;background:#2B301B;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:8px auto 4px;font-size:28px;color:#fff;}
+        .success-title{text-align:center;font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:#2d2416;}
+        .success-sub{text-align:center;font-size:13px;color:#8a7a60;margin-top:4px;}
+        .order-num-card{background:#fff;border:1px solid #e2d9c8;border-radius:12px;padding:16px;text-align:center;}
+        .on-label{font-size:10px;color:#8a7a60;text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;}
+        .on-num{font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:4px;color:#2d2416;}
+        .items-card{background:#fff;border:1px solid #e2d9c8;border-radius:12px;padding:16px;}
+        .items-label{font-size:10px;color:#6b8fa0;text-transform:uppercase;letter-spacing:2px;font-weight:700;margin-bottom:12px;}
+        .item-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0ece3;}
         .item-row:last-child{border-bottom:none;}
-        .total-row{display:flex;justify-content:space-between;font-weight:700;font-size:16px;padding-top:12px;border-top:2px solid #fce4ec;margin-top:4px;}
-        .info-box{background:#fff5f7;border-radius:10px;padding:14px;margin-bottom:20px;font-size:13px;color:#b07090;line-height:1.6;}
-        .btn{display:block;width:100%;padding:14px;background:linear-gradient(135deg,#e91e8c,#ff4db8);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;cursor:pointer;}
+        .item-name{font-size:14px;font-weight:700;color:#2d2416;}
+        .item-qty{font-size:12px;color:#8a7a60;margin-top:2px;}
+        .item-price{font-size:14px;font-weight:800;color:#2d2416;font-family:monospace;}
+        .total-row{display:flex;justify-content:space-between;font-weight:800;font-size:16px;padding-top:14px;border-top:1.5px solid #e2d9c8;margin-top:4px;}
+        .info-box{background:#f0ece3;border:1px solid #e2d9c8;border-radius:10px;padding:14px;font-size:13px;color:#6b7a60;line-height:1.6;text-align:center;}
+        .back-btn{display:block;width:100%;padding:15px;background:#2B301B;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;text-align:center;cursor:pointer;}
+        .bottom-space{height:24px;}
     </style>
 </head>
 <body>
-<div class="card">
-    <div class="icon"><i class="fas fa-check"></i></div>
-    <h1>Order List Submitted!</h1>
-    <p>Hi <strong>{{ order.customer_name }}</strong>, your order list has been received.</p>
-
-    <div class="order-num">
-        <div style="font-size:12px;color:#b07090;margin-bottom:4px;">YOUR ORDER NUMBER</div>
-        <span>#{{ order.order_number }}</span>
+<div class="page">
+    <div class="top-bar">
+        <h2>Order Submitted</h2>
+        <p>Your order list has been received</p>
     </div>
+    <div class="content">
+        <div class="success-icon"><i class="fas fa-check"></i></div>
+        <div class="success-title">Thank You!</div>
+        <div class="success-sub">Hi <strong>{{ order.customer_name }}</strong>, we got your order.</div>
 
-    <div class="items-list">
-        {% for item in items %}
-        <div class="item-row">
-            <span>{{ item.product_name }} × {{ item.quantity }}</span>
-            <span style="color:#e91e8c;font-weight:600;">₹{{ "{:,.2f}".format(item.total_price) }}</span>
+        <div class="order-num-card">
+            <div class="on-label">Your Order Number</div>
+            <div class="on-num">#{{ order.order_number }}</div>
         </div>
-        {% endfor %}
-        <div class="total-row">
-            <span>Total</span>
-            <span style="color:#e91e8c;">₹{{ "{:,.2f}".format(items|sum(attribute='total_price')) }}</span>
+
+        <div class="items-card">
+            <div class="items-label"><i class="fas fa-list"></i> &nbsp;Order Summary</div>
+            {% for item in items %}
+            <div class="item-row">
+                <div>
+                    <div class="item-name">{{ item.product_name }}</div>
+                    <div class="item-qty">Qty: {{ item.quantity }} &nbsp;×&nbsp; ₹{{ "{:,.2f}".format(item.unit_price) }}</div>
+                </div>
+                <div class="item-price">₹{{ "{:,.2f}".format(item.total_price) }}</div>
+            </div>
+            {% endfor %}
+            <div class="total-row">
+                <span>Total</span>
+                <span>₹{{ "{:,.2f}".format(items|sum(attribute='total_price')) }}</span>
+            </div>
         </div>
-    </div>
 
-    <div class="info-box">
-        <i class="fas fa-info-circle" style="color:#e91e8c;"></i>
-        Please proceed to the <strong>counter</strong> with this order number to complete your purchase and payment.
-    </div>
+        <div class="info-box">
+            <i class="fas fa-store"></i>&nbsp;
+            Please go to the <strong>counter</strong> and share order number <strong>#{{ order.order_number }}</strong> to complete your purchase.
+        </div>
 
-    <a href="/portal" class="btn"><i class="fas fa-arrow-left"></i> Back to Menu</a>
+        <a href="/portal" class="back-btn"><i class="fas fa-arrow-left"></i> &nbsp;Back to Menu</a>
+        <div class="bottom-space"></div>
+    </div>
 </div>
 </body>
 </html>
