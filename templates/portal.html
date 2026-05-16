@@ -287,6 +287,7 @@ function validatePortal(){
     var hasItems=Object.keys(cart).some(function(k){return cart[k].qty>0;});
     if(!hasItems){alert('Please add at least one product!');goToPage(2);return false;}
     if(!name){alert('Please enter your name!');return false;}
+    if(!/^[a-zA-Z ]+$/.test(name)){alert('Name should contain alphabets only!');return false;}
     if(!/^\d{10}$/.test(phone)){alert('Please enter a valid 10-digit phone number!');return false;}
     if(!address){alert('Please enter your address!');return false;}
     return true;
